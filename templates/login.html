@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="{{ theme }}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
     <div class="container">
         <h1>Login<span class="blinking-cursor">|</span></h1>
         <form method="POST">
@@ -18,5 +27,15 @@
         </form>
         <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
     </div>
+    <script>
+        setTimeout(function() {
+            let flashMessages = document.querySelector('.flash-messages');
+            if (flashMessages) {
+                flashMessages.style.transition = 'opacity 1s ease';
+                flashMessages.style.opacity = '0';
+                setTimeout(() => flashMessages.remove(), 1000);
+            }
+        }, 2000);
+    </script>
 </body>
 </html>

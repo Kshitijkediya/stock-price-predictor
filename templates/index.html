@@ -93,73 +93,73 @@
             <div class="error">{{ error }}</div>
         {% endif %}
 
-        {# --- Updated Prediction and Explanation Display Section --- #}
+        {# --- Prediction and Explanation Display Section --- #}
         {% if predictions and not error %}
             <h2>Prediction Results for {{ ticker }}:</h2>
 
+            {# 1. Prediction values only #}
             <div class="prediction-container {% if model_choice != 'Both' %}single-prediction{% endif %}">
-
-                {# Display LSTM Prediction and Explanation if available #}
                 {% if 'LSTM' in predictions %}
                     <div class="prediction-box">
                         <h3>LSTM Predicted Close: {{ predictions['LSTM'] }}</h3>
-                        {# --- Explanation Section for LSTM --- #}
-                        {% if explanations and 'LSTM' in explanations %}
-                            <div class="explanation-box">
-                                <h4>LSTM Prediction Explanation (SHAP):</h4>
-                                {% if explanations['LSTM'].get('error') %}
-                                    <p class="error-explanation">Error generating explanation: {{ explanations['LSTM']['error'] }}</p>
-                                {% elif explanations['LSTM'].get('feature_importance') %}
-                                    <p>Top features influencing the prediction (most recent days have higher impact):</p>
-                                    <ul>
-                                        {% for feature, importance in explanations['LSTM']['feature_importance'] %}
-                                            {# Add |float filter before |round #}
-                                            <li>{{ feature }}: (Impact Score: {{ importance|float|round(4) }})</li>
-                                        {% endfor %}
-                                    </ul>
-                                    <p><small>Note: Higher score indicates greater influence (positive or negative) of that past day's price on the prediction.</small></p>
-                                {% else %}
-                                    <p>Explanation data not available.</p>
-                                {% endif %}
-                            </div>
+                        {% if 'Current Price' in predictions %}
+                            <p><b>Last Actual Close:</b> {{ predictions['Current Price'] }} (as of {{ predictions['Last Date'] }})</p>
                         {% endif %}
-                        {# --- End Explanation Section --- #}
                     </div>
                 {% endif %}
-
-
-                {# Display ARIMA Prediction and Explanation if available #}
-                 {% if 'ARIMA' in predictions %}
+                {% if 'ARIMA' in predictions %}
                     <div class="prediction-box">
                         <h3>ARIMA Predicted Close: {{ predictions['ARIMA'] }}</h3>
-                         {# --- Explanation Section for ARIMA --- #}
-                         {% if explanations and 'ARIMA' in explanations %}
-                            <div class="explanation-box">
-                                <h4>ARIMA Prediction Explanation:</h4>
-                                {% if explanations['ARIMA'].get('error') %}
-                                     <p class="error-explanation">Error generating explanation: {{ explanations['ARIMA']['error'] }}</p>
-                                {% elif explanations['ARIMA'].get('info') %}
-                                     <p>{{ explanations['ARIMA']['info'] }}</p>
-                                {% else %}
-                                     <p>Explanation data not available.</p>
-                                {% endif %}
-                            </div>
-                         {% endif %}
-                         {# --- End Explanation Section --- #}
+                        {% if 'Current Price' in predictions and 'LSTM' not in predictions %}
+                            <p><b>Last Actual Close:</b> {{ predictions['Current Price'] }} (as of {{ predictions['Last Date'] }})</p>
+                        {% endif %}
                     </div>
-                 {% endif %}
+                {% endif %}
+            </div>
 
-            </div> {# End prediction-container #}
+            {# 2. Price chart #}
+            {% if predictions.get('chart_html') %}
+                <div class="chart-container">
+                    {{ predictions['chart_html'] | safe }}
+                </div>
+            {% endif %}
 
-            {# Display informational data clearly below the prediction boxes #}
-            <div class="info-box">
-                 {% if 'Current Price' in predictions %}
-                    <p><b>Last Actual Close:</b> {{ predictions['Current Price'] }} (as of {{ predictions['Last Date'] }})</p>
-                 {% endif %}
+            {# 3. SHAP / model explanations #}
+            <div class="prediction-container {% if model_choice != 'Both' %}single-prediction{% endif %}" style="margin-top:20px;">
+                {% if explanations and 'LSTM' in explanations %}
+                    <div class="prediction-box explanation-box">
+                        <h4>LSTM Prediction Explanation (SHAP):</h4>
+                        {% if explanations['LSTM'].get('error') %}
+                            <p class="error-explanation">Error generating explanation: {{ explanations['LSTM']['error'] }}</p>
+                        {% elif explanations['LSTM'].get('feature_importance') %}
+                            <p>Top features influencing the prediction (most recent days have higher impact):</p>
+                            <ul>
+                                {% for feature, importance in explanations['LSTM']['feature_importance'] %}
+                                    <li>{{ feature }}: (Impact Score: {{ importance|float|round(4) }})</li>
+                                {% endfor %}
+                            </ul>
+                            <p><small>Note: Higher score indicates greater influence (positive or negative) of that past day's price on the prediction.</small></p>
+                        {% else %}
+                            <p>Explanation data not available.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if explanations and 'ARIMA' in explanations %}
+                    <div class="prediction-box explanation-box">
+                        <h4>ARIMA Prediction Explanation:</h4>
+                        {% if explanations['ARIMA'].get('error') %}
+                            <p class="error-explanation">Error generating explanation: {{ explanations['ARIMA']['error'] }}</p>
+                        {% elif explanations['ARIMA'].get('info') %}
+                            <p>{{ explanations['ARIMA']['info'] }}</p>
+                        {% else %}
+                            <p>Explanation data not available.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
 
         {% endif %}
-        {# --- End Updated Display Section --- #}
+        {# --- End Display Section --- #}
 
         <p><a href="{{ url_for('dashboard') }}">Go to Dashboard</a> | <a href="{{ url_for('preferences') }}">Preferences</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
     </div>
@@ -172,7 +172,7 @@
                 flashMessages.style.opacity = '0';
                 setTimeout(() => flashMessages.remove(), 1000); // Remove element after fade out
             }
-        }, 5000); // Hide after 5 seconds
+        }, 2000); // Hide after 2 seconds
     </script>
 </body>
 </html>

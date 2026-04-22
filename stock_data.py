@@ -8,7 +8,8 @@ from tensorflow.keras.layers import LSTM, Dense
 from statsmodels.tsa.arima.model import ARIMA
 from datetime import datetime, timedelta
 from functools import lru_cache
-import shap 
+import shap
+import plotly.graph_objects as go
 
 if not os.path.exists('models'):
     os.makedirs('models')
@@ -308,6 +309,58 @@ def get_lstm_shap_explanation(model, background_data, input_instance):
         return {"error": f"Could not generate SHAP explanation: {type(e).__name__}"}
 
 
+def generate_prediction_chart(data, predictions, ticker):
+    try:
+        display_data = data.tail(90)
+        dates = [d.strftime('%Y-%m-%d') if hasattr(d, 'strftime') else str(d) for d in display_data['Date'].tolist()]
+        closes = [float(c) for c in display_data['Close'].tolist()]
+
+        last_date = data['Date'].iloc[-1]
+        next_date = (last_date + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=dates, y=closes,
+            mode='lines', name='Historical Close',
+            line=dict(color='#00ff00', width=2)
+        ))
+
+        if 'LSTM' in predictions and not isinstance(predictions['LSTM'], str):
+            fig.add_trace(go.Scatter(
+                x=[next_date], y=[float(predictions['LSTM'])],
+                mode='markers+text', name='LSTM Prediction',
+                marker=dict(color='cyan', size=14, symbol='star'),
+                text=['LSTM'], textposition='top center',
+                textfont=dict(color='cyan')
+            ))
+
+        if 'ARIMA' in predictions and not isinstance(predictions['ARIMA'], str):
+            fig.add_trace(go.Scatter(
+                x=[next_date], y=[float(predictions['ARIMA'])],
+                mode='markers+text', name='ARIMA Prediction',
+                marker=dict(color='orange', size=14, symbol='diamond'),
+                text=['ARIMA'], textposition='bottom center',
+                textfont=dict(color='orange')
+            ))
+
+        fig.update_layout(
+            title=dict(text=f'{ticker} — Last 90 Days & Next Day Prediction', font=dict(color='#00ff00')),
+            xaxis_title='Date', yaxis_title='Price',
+            plot_bgcolor='#0a0a0a', paper_bgcolor='#000000',
+            font=dict(color='#00ff00', family='Courier New'),
+            xaxis=dict(gridcolor='#1a3300', zerolinecolor='#1a3300'),
+            yaxis=dict(gridcolor='#1a3300', zerolinecolor='#1a3300'),
+            legend=dict(bgcolor='#0a0a0a', bordercolor='#00ff00', borderwidth=1),
+            margin=dict(l=60, r=40, t=60, b=60)
+        )
+
+        return fig.to_html(full_html=False, include_plotlyjs='cdn')
+    except Exception as e:
+        print(f"Error generating chart: {type(e).__name__}: {e}")
+        return None
+
+
 def make_prediction(ticker, model_choice):
     print(f"--- Running prediction for {ticker} ---")
     try:
@@ -378,6 +431,7 @@ def make_prediction(ticker, model_choice):
 
         predictions['Current Price'] = data['Close'].iloc[-1]
         predictions['Last Date'] = data['Date'].iloc[-1].strftime('%Y-%m-%d')
+        predictions['chart_html'] = generate_prediction_chart(data, predictions, ticker)
         print(f"--- Prediction successful for {ticker} ---")
         return predictions, explanations
 
