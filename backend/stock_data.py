@@ -11,8 +11,10 @@ from functools import lru_cache
 import shap
 import plotly.graph_objects as go
 
-if not os.path.exists('models'):
-    os.makedirs('models')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(BASE_DIR, 'models')
+if not os.path.exists(MODELS_DIR):
+    os.makedirs(MODELS_DIR)
 
 @lru_cache(maxsize=10)
 def get_stock_data(ticker):
@@ -102,7 +104,7 @@ def prepare_data(data):
     return x_train, y_train, scaler
 
 def build_lstm_model(x_train, y_train, ticker):
-    model_filename = f'models/{ticker}_lstm.keras'
+    model_filename = os.path.join(MODELS_DIR, f'{ticker}_lstm.keras')
     if os.path.exists(model_filename):
         model = load_model(model_filename)
     else:

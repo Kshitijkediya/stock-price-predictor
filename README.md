@@ -49,7 +49,7 @@ pip install -r requirements.txt
 **3. Run the app**
 
 ```bash
-python app.py
+python run.py
 ```
 
 Then open `http://127.0.0.1:5000` in your browser. Create an account and start predicting.
@@ -62,13 +62,17 @@ Then open `http://127.0.0.1:5000` in your browser. Create an account and start p
 
 ```
 stock-price-predictor/
-├── app.py              # Flask routes and app config
-├── stock_data.py       # Data fetching, model training, predictions, charts
-├── models.py           # SQLAlchemy models (User, Portfolio, Transaction)
-├── templates/          # Jinja2 HTML templates
-├── static/             # CSS, JS, static assets
-├── models/             # Saved LSTM .keras model files (auto-created)
-└── instance/           # SQLite database (auto-created)
+├── backend/
+│   ├── app.py              # Flask routes and app config
+│   ├── stock_data.py       # Data fetching, model training, predictions, charts
+│   ├── models.py           # SQLAlchemy models (User, Portfolio, Transaction)
+│   ├── models/             # Saved LSTM .keras model files (auto-created)
+│   └── instance/           # SQLite database (auto-created)
+├── frontend/
+│   ├── templates/          # Jinja2 HTML templates
+│   └── static/             # CSS and static assets
+├── run.py                  # App entry point
+└── requirements.txt
 ```
 
 ---

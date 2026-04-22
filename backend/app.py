@@ -5,7 +5,11 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder='../frontend/templates',
+    static_folder='../frontend/static'
+)
 app.config['SECRET_KEY'] = '7ebd57c8178cdc606bdf75240d861c17' 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
