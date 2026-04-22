@@ -1,0 +1,23 @@
+<!-- templates/create_portfolio.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Portfolio - Stock Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ theme }}">
+    <div class="theme-toggle">
+        <button onclick="window.location.href='{{ url_for("toggle_theme") }}';">Switch Theme</button>
+    </div>
+    <div class="container">
+        <h1>Create Portfolio<span class="blinking-cursor">|</span></h1>
+        <form method="POST">
+            <label for="name">Portfolio Name:</label><br>
+            <input type="text" id="name" name="name" required><br><br>
+            <input type="submit" value="Create Portfolio">
+        </form>
+        <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+    </div>
+</body>
+</html>

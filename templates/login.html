@@ -1,0 +1,22 @@
+<!-- templates/login.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Stock Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ theme }}">
+    <div class="container">
+        <h1>Login<span class="blinking-cursor">|</span></h1>
+        <form method="POST">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" value="Login">
+        </form>
+        <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
+    </div>
+</body>
+</html>

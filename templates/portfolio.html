@@ -1,0 +1,84 @@
+<!-- templates/portfolio.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ portfolio.name }} - Stock Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #0f0;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #0f0;
+            color: #000;
+        }
+    </style>
+</head>
+<body class="{{ theme }}">
+    <div class="theme-toggle">
+        <button onclick="window.location.href='{{ url_for("toggle_theme") }}';">Switch Theme</button>
+    </div>
+    <div class="container">
+        <h1>{{ portfolio.name }}<span class="blinking-cursor">|</span></h1>
+        <h2>Cash Balance: ${{ portfolio.cash_balance }}</h2>
+        <h3>Holdings:</h3>
+        <table>
+            <tr>
+                <th>Ticker</th>
+                <th>Shares</th>
+                <th>Current Price</th>
+                <th>Total Value</th>
+            </tr>
+            {% for holding in holdings %}
+            <tr>
+                <td>{{ holding.ticker }}</td>
+                <td>{{ holding.shares }}</td>
+                <td>${{ holding.current_price }}</td>
+                <td>${{ holding.total_value }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <h3>Transactions:</h3>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Ticker</th>
+                <th>Type</th>
+                <th>Shares</th>
+                <th>Price</th>
+            </tr>
+            {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.date }}</td>
+                <td>{{ transaction.ticker }}</td>
+                <td>{{ transaction.transaction_type }}</td>
+                <td>{{ transaction.shares }}</td>
+                <td>${{ transaction.price }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <h3>Buy/Sell Stock:</h3>
+        <form method="POST">
+            <label for="ticker">Ticker:</label><br>
+            <input type="text" id="ticker" name="ticker" required><br>
+            <label for="shares">Shares:</label><br>
+            <input type="number" id="shares" name="shares" required><br>
+            <label for="transaction_type">Transaction Type:</label><br>
+            <select id="transaction_type" name="transaction_type">
+                <option value="BUY">Buy</option>
+                <option value="SELL">Sell</option>
+            </select><br><br>
+            <input type="submit" value="Execute">
+        </form>
+        <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Price Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Existing styles */
+        .prediction-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
+            gap: 20px; /* Add gap between boxes */
+        }
+        .prediction-box {
+            width: 45%;
+            margin: 10px 0; /* Adjusted margin */
+            padding: 15px;
+            border: 1px solid #0f0; /* Use theme color */
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+         .prediction-box h3 {
+             margin-top: 0;
+         }
+         /* Removed chart-container style */
+        .info-box {
+             width: 100%;
+             margin-top: 20px;
+             padding-top: 10px;
+             border-top: 1px solid #0f0; /* Use theme color */
+        }
+        .single-prediction .prediction-box {
+             width: 90%;
+        }
+
+        /* --- NEW Styles for Explanation Section --- */
+        .explanation-box {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #0f0; /* Dashed separator */
+        }
+        .explanation-box h4 {
+            margin-bottom: 5px;
+            text-decoration: underline;
+        }
+        .explanation-box p, .explanation-box ul {
+            font-size: 0.9em;
+            text-align: left;
+        }
+         .explanation-box li {
+            margin-bottom: 3px;
+         }
+        .error-explanation {
+            color: red;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body class="{{ theme }}">
+    <div class="theme-toggle">
+        <button onclick="window.location.href='{{ url_for("toggle_theme") }}';">Switch Theme</button>
+    </div>
+    <div class="container">
+        <h1>Stock Price Predictor<span class="blinking-cursor">|</span></h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="ticker">Enter Stock Ticker Symbol:</label><br>
+            <input type="text" id="ticker" name="ticker" placeholder="e.g., AAPL, ONGC.NS" required value="{{ ticker or '' }}"><br>
+            <label for="model_choice">Select Prediction Model:</label><br>
+            <select id="model_choice" name="model_choice">
+                <option value="LSTM" {% if model_choice == 'LSTM' %}selected{% endif %}>LSTM Neural Network</option>
+                <option value="ARIMA" {% if model_choice == 'ARIMA' %}selected{% endif %}>ARIMA</option>
+                <option value="Both" {% if model_choice == 'Both' or not model_choice %}selected{% endif %}>Both Models</option>
+            </select><br><br>
+            <input type="submit" value="Predict">
+        </form>
+
+        {# Display error if passed specifically (though now handled by flash) #}
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {# --- Updated Prediction and Explanation Display Section --- #}
+        {% if predictions and not error %}
+            <h2>Prediction Results for {{ ticker }}:</h2>
+
+            <div class="prediction-container {% if model_choice != 'Both' %}single-prediction{% endif %}">
+
+                {# Display LSTM Prediction and Explanation if available #}
+                {% if 'LSTM' in predictions %}
+                    <div class="prediction-box">
+                        <h3>LSTM Predicted Close: {{ predictions['LSTM'] }}</h3>
+                        {# --- Explanation Section for LSTM --- #}
+                        {% if explanations and 'LSTM' in explanations %}
+                            <div class="explanation-box">
+                                <h4>LSTM Prediction Explanation (SHAP):</h4>
+                                {% if explanations['LSTM'].get('error') %}
+                                    <p class="error-explanation">Error generating explanation: {{ explanations['LSTM']['error'] }}</p>
+                                {% elif explanations['LSTM'].get('feature_importance') %}
+                                    <p>Top features influencing the prediction (most recent days have higher impact):</p>
+                                    <ul>
+                                        {% for feature, importance in explanations['LSTM']['feature_importance'] %}
+                                            {# Add |float filter before |round #}
+                                            <li>{{ feature }}: (Impact Score: {{ importance|float|round(4) }})</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p><small>Note: Higher score indicates greater influence (positive or negative) of that past day's price on the prediction.</small></p>
+                                {% else %}
+                                    <p>Explanation data not available.</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        {# --- End Explanation Section --- #}
+                    </div>
+                {% endif %}
+
+
+                {# Display ARIMA Prediction and Explanation if available #}
+                 {% if 'ARIMA' in predictions %}
+                    <div class="prediction-box">
+                        <h3>ARIMA Predicted Close: {{ predictions['ARIMA'] }}</h3>
+                         {# --- Explanation Section for ARIMA --- #}
+                         {% if explanations and 'ARIMA' in explanations %}
+                            <div class="explanation-box">
+                                <h4>ARIMA Prediction Explanation:</h4>
+                                {% if explanations['ARIMA'].get('error') %}
+                                     <p class="error-explanation">Error generating explanation: {{ explanations['ARIMA']['error'] }}</p>
+                                {% elif explanations['ARIMA'].get('info') %}
+                                     <p>{{ explanations['ARIMA']['info'] }}</p>
+                                {% else %}
+                                     <p>Explanation data not available.</p>
+                                {% endif %}
+                            </div>
+                         {% endif %}
+                         {# --- End Explanation Section --- #}
+                    </div>
+                 {% endif %}
+
+            </div> {# End prediction-container #}
+
+            {# Display informational data clearly below the prediction boxes #}
+            <div class="info-box">
+                 {% if 'Current Price' in predictions %}
+                    <p><b>Last Actual Close:</b> {{ predictions['Current Price'] }} (as of {{ predictions['Last Date'] }})</p>
+                 {% endif %}
+            </div>
+
+        {% endif %}
+        {# --- End Updated Display Section --- #}
+
+        <p><a href="{{ url_for('dashboard') }}">Go to Dashboard</a> | <a href="{{ url_for('preferences') }}">Preferences</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
+    </div>
+    <script>
+        // Optional: Auto-hide flash messages after a few seconds
+        setTimeout(function() {
+            let flashMessages = document.querySelector('.flash-messages');
+            if (flashMessages) {
+                flashMessages.style.transition = 'opacity 1s ease';
+                flashMessages.style.opacity = '0';
+                setTimeout(() => flashMessages.remove(), 1000); // Remove element after fade out
+            }
+        }, 5000); // Hide after 5 seconds
+    </script>
+</body>
+</html>
