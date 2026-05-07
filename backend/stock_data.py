@@ -18,9 +18,7 @@ if not os.path.exists(MODELS_DIR):
 
 @lru_cache(maxsize=10)
 def get_stock_data(ticker):
-    """
-    Fetches stock data, handles MultiIndex columns, and includes timeout.
-    """
+
     print(f"Fetching data for {ticker} with increased timeout (60s)...")
     try:
         data_multi = yf.download(
