@@ -123,7 +123,6 @@ def predict_next_day_lstm(model, data, scaler):
     if len(data) < prediction_days:
         raise ValueError(f"Not enough data ({len(data)} points) for LSTM prediction sequence of {prediction_days} days.")
 
-    # Prepare the actual input for the prediction
     real_data_for_pred = data.iloc[-prediction_days:].values
     if real_data_for_pred.shape[0] != prediction_days or real_data_for_pred.shape[1] != 1:
          raise ValueError(f"Incorrect shape {real_data_for_pred.shape} for scaling prediction input. Expected ({prediction_days}, 1).")
