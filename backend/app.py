@@ -30,7 +30,7 @@ def load_user(user_id):
 # Context processor to inject theme
 @app.context_processor
 def inject_theme():
-    theme = request.cookies.get('theme', 'dark-mode') # Default to dark mode
+    theme = request.cookies.get('theme', 'dark-mode')
     return dict(theme=theme)
 
 # Home route - Modified to handle explanations
