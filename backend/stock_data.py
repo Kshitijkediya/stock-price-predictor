@@ -130,7 +130,6 @@ def predict_next_day_lstm(model, data, scaler):
     scaled_real_data_for_pred = scaler.transform(real_data_for_pred)
     input_data = np.reshape(scaled_real_data_for_pred, (1, prediction_days, 1))
 
-    # Make the prediction
     prediction = model.predict(input_data)
     prediction_inversed = scaler.inverse_transform(prediction)
 
