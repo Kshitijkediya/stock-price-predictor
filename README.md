@@ -79,6 +79,6 @@ stock-price-predictor/
 
 ## Notes
 
-- Predictions are for the **next trading day** only — this is not financial advice
+- Predictions are for the **next trading day** only — this is not a financial advice
 - SHAP explanations on the LSTM use `KernelExplainer`, which can be slow on first run
 - The ARIMA model tries `(5,1,0)` first and falls back to `(1,1,0)` if it doesn't converge
