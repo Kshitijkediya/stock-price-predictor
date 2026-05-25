@@ -60,7 +60,6 @@ def home():
             ticker=ticker,
             model_choice=model_choice
         )
-    # Initial GET request
     return render_template('index.html')
 
 # --- Signup, Login, Logout routes remain unchanged ---
